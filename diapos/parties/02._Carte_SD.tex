@@ -1,0 +1,155 @@
+\section{Formatage et écriture de la carte SD}
+
+\subsection{Téléchargement de l'image}
+
+\begin{frame}
+\frametitle{Où télécharger les images ?}
+
+Les différentes images proposées par la Raspberry Pi Foundation sont à cette adresse \href{https://www.raspberrypi.org/downloads/}{https://www.raspberrypi.org/downloads/}.
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Où les télécharger ?}
+
+Différents systèmes d'exploitation sont disponibles~:
+\begin{itemize}
+	\item NOOBS
+	\item Raspbian
+	\item Ubuntu Mate
+	\item Snappy Ubuntu Core
+	\item Windows 10
+	\item \dots
+\end{itemize}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{NOOBS}
+
+NOOBS, \emph{New Out The Box Software} développé spécifiquement pour le Pi par la Rapsberry Pi Foundation. NOOBS n'est pas vraiment un système d'exploitation mais un gestionnaire de systèmes qui va simplifier l'installation de l'OS désiré mais également permettre le multiboot entre plusieurs systèmes présents sur la même carte SD. Solution idéale pour débuter ou pour tester les différents systèmes
+existants.
+
+\end{frame}
+
+
+
+\begin{frame}[containsverbatim]
+\frametitle{Téléchargement de l'image}
+
+Les images sont disponibles sous forme de fichiers compressés au format zip. Pour télécharger l'image :
+\begin{verbatim}
+wget https://downloads.raspberrypi.org/raspbian_lite_latest
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Vérification de l'image}
+La première étape consiste à vérifier qu'il n'y a pas eu de problème lors du téléchargement en vérifiant la somme de contrôle (SHA-1).
+
+Après téléchargement, il suffit de taper~:
+\begin{verbatim}
+$sha1sum 2016-11-25-raspbian-jessie-lite.zip 
+6741a30d674d39246302a791f1b7b2b0c50ef9b7  2016-11-25-raspbian-jessie-lite.zip
+\end{verbatim}
+
+Il suffit de comparer alors le checksum du 	site web à celui affiché dans la console.
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Décompresser l'image}
+Pour décompresser l'image, il suffit de faire~: 
+
+\begin{verbatim}
+$unzip 2016-09-23-raspbian-jessie-lite.zip
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{\'Ecriture de l'image}
+Pour écrire l'image, vous pouvez toujours vous aider de l'\href{https://www.raspberrypi.org/documentation/installation/installing-images/linux.md}{aide pour Linux}.
+
+Les images représentent les données brutes à écrire sur une carte SD. Le format \og~img~\fg est aussi valable pour faire une image disque, etc.
+
+L'utilitaire pour écrire  cette image est \emph{dd}.
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{\'Ecriture de l'image}
+
+Il y a trois arguments pour \emph{dd}~:
+\begin{description}
+	\item[bs] ou block-size. C'est la taille des blocs que va écrire l'utilitaire
+	\item[if] (input file) c'est la source. 
+	\item[of] (output file) c'est la destination. 
+\end{description}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+L'opération d'écriture sur un disque est irréversible. Il faut être donc absolument sûr d'écrire sur le bon disque.
+
+Pour ceux qui sont frileux et pour les Windowsien, il y a le logiciel \href{https://etcher.io/}{Echter}.
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{\'Ecriture de l'image}
+
+Pour repérer le disque à écrire, la première possibilité est d'insérer la carte et de taper juste après la commande \emph{dmesg}~:
+
+\begin{verbatim}
+[ 6516.764148] sd 5:0:0:0: [sdb] 62333952 512-byte logical blocks: (31.9 GB/29.7 GiB)
+[ 6516.765711] sd 5:0:0:0: [sdb] Write Protect is off
+[ 6516.765713] sd 5:0:0:0: [sdb] Mode Sense: 03 00 00 00
+[ 6516.767313] sd 5:0:0:0: [sdb] No Caching mode page found
+...
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{\'Ecriture de l'image}
+
+Sur ce listing, on voit que la carte SD a comme nom de périphérique assigné \emph{/dev/sdb}.
+
+Pour vérifier que c'est ça, il faut utiliser \emph{fdisk}~:
+\begin{verbatim}
+$sudo fdisk /dev/sdb
+\end{verbatim}
+
+Puis appuyer sur \emph{p} (pour print, m pour l'aide).
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{\'Ecriture de l'image}
+
+Vous allez avoir quelque chose comme ça~:
+\begin{verbatim}
+Disque /dev/sdb : 29,7 GiB, 31914983424 octets, 62333952 secteurs
+Unités : sectors of 1 * 512 = 512 octets
+...
+Périphérique Amorçage Start      Fin Secteurs  Size Id Type
+/dev/sdb1              2048 62332927 62330880 29,7G  b W95 FAT32
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{\'Ecriture de l'image}
+
+On voit que la carte fait environ 30Go avec une partition formatée en fat32, c'est typiquement une carte quand vous la sortez de la boite\dots 
+
+Vous pouvez aussi utiliser \emph{blkid} qui est moins informatif ou bien, si la partition est montée \emph{df -h}.
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{\'Ecriture de l'image}
+
+L'image une fois écrite ne remplit pas la carte... généralement. Sur la carte après écriture, il y a trois partitions~:
+\begin{enumerate}
+ \item une partition FAT32 (Windows/Linux) qui contient les fichiers de démarrage de la Pi
+ \item une partition ext4 (Linux) qui contient tous les fichiers de la distribution Raspbian
+ \item une zone vide non partitionnée et  non formatée
+ \end{enumerate}
+  
+\end{frame}

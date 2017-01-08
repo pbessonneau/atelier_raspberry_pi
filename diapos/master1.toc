@@ -1,0 +1,12 @@
+\beamer@endinputifotherversion {3.36pt}
+\select@language {french}
+\beamer@sectionintoc {1}{Petit historique du Raspberry Pi}{3}{0}{1}
+\beamer@sectionintoc {2}{Les caract\IeC {\'e}ristiques du Pi 3}{6}{0}{2}
+\beamer@sectionintoc {3}{Formatage et \IeC {\'e}criture de la carte SD}{10}{0}{3}
+\beamer@subsectionintoc {3}{1}{T\IeC {\'e}l\IeC {\'e}chargement de l'image}{10}{0}{3}
+\beamer@sectionintoc {4}{Personnalisation de la carte}{24}{0}{4}
+\beamer@subsectionintoc {4}{1}{Activer SSH}{24}{0}{4}
+\beamer@subsectionintoc {4}{2}{\'Edition des param\IeC {\`e}tres r\IeC {\'e}seaux}{26}{0}{4}
+\beamer@subsectionintoc {4}{3}{Ajout d'un partition /home}{37}{0}{4}
+\beamer@subsectionintoc {4}{4}{Sauvegarde de la carte SD}{44}{0}{4}
+\beamer@subsectionintoc {4}{5}{Pr\IeC {\'e}server la carte SD}{45}{0}{4}

@@ -1,0 +1,59 @@
+\section{Connexion SSH à la Pi}
+
+\subsection{Se connecter à la Pi}
+
+\begin{frame}[containsverbatim]
+\frametitle{Première connexion}
+
+\begin{verbatim}
+$ssh 192.168.0.56 -l pi
+$raspberry (c'est le mot de passe par défaut)
+The authenticity of host '192.168.0.56 (192.168.0.56)' can't be established.
+ECDSA key fingerprint is SHA256:jxN8A+IwAD+axlznp4wLME8Tpi36yCVW8duJmvA0yfs.
+Are you sure you want to continue connecting (yes/no)? 
+$yes
+Warning: Permanently added '192.168.0.56' (ECDSA) to the list of known hosts.
+\end{verbatim}
+\end{frame}
+
+\subsection{Créer une clef pour la connexion sans mot de passe}
+
+\begin{frame}[containsverbatim]
+\frametitle{Connexion par clef}
+
+Vous pouvez le faire sur votre poste linux, utiliser putty-keygen ou le faire dans la pi.
+
+Pour générer un clef si vous n'en avez pas déjà, il faut utiliser ``ssh-keygen''
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Connexion par clef}
+
+Pour activer la connexion par clef, il suffit de quelques modifications~:
+\begin{verbatim}
+$mv .ssh/id_rsa.pub .ssh/authorized_keys
+$vi .ssh/id_rsa
+(copier la clef privée dans un 
+fichier ``clef_raspberry'' du répertoire .ssh)
+$rm .ssh/id_rsa
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Connexion par clef}
+
+Après il suffit de après de configurer ou de créer le fichier ``.ssh/config'~:
+
+\begin{verbatim}
+Host monpi
+    Hostname 192.169.0.56
+    User pi
+    Port 22
+    IdentityFile clef_raspberry
+\end{verbatim}
+
+Vous pourrez vous connecter sans mot de passe simplement en tapant ``ssh monpi''.
+
+\end{frame}
+
+

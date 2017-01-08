@@ -1,0 +1,82 @@
+\section{Connexion SSH à la Pi}
+
+Pour se connecter à la Pi, il faut que la Pi et l'ordinateur soient connectés tous les deux sur ethernet et que la Pi soit accessible depuis l'ordinateur (pas de routeur ou de pare-feu entre les deux par exemple). 
+
+\subsection{Se connecter à la Pi}
+
+Pour se connecter il suffit de taper~:
+\begin{verbatim}
+$ssh 192.168.0.56 -l pi
+$raspberry (c'est le mot de passe par défaut)
+
+The authenticity of host '192.168.0.56 (192.168.0.56)' can't be established.
+ECDSA key fingerprint is SHA256:jxN8A+IwAD+axlznp4wLME8Tpi36yCVW8duJmvA0yfs.
+Are you sure you want to continue connecting (yes/no)? 
+
+$yes
+
+Warning: Permanently added '192.168.0.56' (ECDSA) to the list of known hosts.
+\end{verbatim}
+
+Les Pis lors du premier démarrage créent une clef unique pour le serveur, il n'y a donc pas besoin de régénérer les clefs pour le serveur SSH.
+
+\subsection{Créer une clef pour la connexion sans mot de passe}
+
+Vous pouvez le faire sur votre poste linux, utiliser putty-keygen ou le faire dans la pi.
+
+Pour générer un clef si vous n'en avez pas déjà, il faut utiliser ``ssh-keygen''
+
+\begin{verbatim}
+$ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/pi/.ssh/id_rsa): 
+$ (entrée) par défaut
+Created directory '/home/pi/.ssh'.
+Enter passphrase (empty for no passphrase): 
+$ (taper un mot de passe, vide pour pas de mot de passe)
+Enter same passphrase again: 
+$ (confirmer le mot de passe)
+Your identification has been saved in /home/pi/.ssh/id_rsa.
+Your public key has been saved in /home/pi/.ssh/id_rsa.pub.
+The key fingerprint is:
+31:96:37:e1:0d:93:95:a2:51:ff:80:1a:79:be:bb:ad pi@raspberrypi
+The key's randomart image is:
++---[RSA 2048]----+
+|         .=o..   |
+|        .+oB.    |
+|        Bo*.+    |
+|       ..O . o   |
+|        S .   .  |
+|           .     |
+|          .      |
+|           o     |
+|          Eo.    |
++-----------------+
+\end{verbatim}
+
+Pour activer la connexion par clef, il suffit de quelques modifications~:
+\begin{verbatim}
+$mv .ssh/id_rsa.pub .ssh/authorized_keys
+$vi .ssh/id_rsa
+(copier la clef privée dans un fichier ``clef_raspberry'' du répertoire .ssh
+de votre ordinateur)
+$rm .ssh/id_rsa
+\end{verbatim}
+
+Renommer le fichier ``id\_rsa.pub'' en ``authorized\_keys'' permet notamment au serveur de reconnaître que l'ordinateur avec la clef privé correspondante (id\_rsa) est autorisée à se connecter  sur la Pi avec ce compte.
+
+Il faut donc bien copier ``id\_rsa'' sous ce nom ou un autre dans votre compte personnel et dans le répertoire .ssh pour un ordinateur GNU/Linux ou Mac OS.
+
+Avec putty sous Windows vous trouverez de l'aide à cette \href{https://www.howtoforge.com/ssh_key_based_logins_putty}{page}.  
+
+Sous GNU/Linux (et Mac OS), après il suffit de configurer ou de créer le fichier ``.ssh/config'~:
+
+\begin{verbatim}
+Host monpi
+    Hostname 192.169.0.56
+    User pi
+    Port 22
+    IdentityFile clef_raspberry
+\end{verbatim}
+
+Vous pourrez vous connecter sans mot de passe simplement en tapant ``ssh monpi''.

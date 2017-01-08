@@ -1,0 +1,150 @@
+\section{Application avec la caméra}
+
+\subsection{Description des caméras}
+
+\begin{frame}[containsverbatim]
+\frametitle{Description}
+Les caméras Pi sont de deux générations, les premières ont un capteur de 3 millions de pixels et les secondes de 5 millions.
+
+Attention quand vous manipulez ces caméras, elle sont très sensibles à l'électricité statique. Par conséquent avant de les prendre en main il faut toucher un objet à la terre comme la cage de votre ordinateur ou un radiateur.
+
+Elles se branchent sur le port CSI, entre le port HDMI et le jack audio/video. Les parties conductrices du ruban doivent se trouver vers la prise HDMI.
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Description}
+
+Il y a deux types de caméras~:
+\begin{itemize}
+	\item la caméra standard. C'est une caméra qui prend des photos ou vidéos que dans le visible.
+	\item la caméra IR. C'est une caméra qui peut capturer des infra-rouges. Attention il faut une source de lumière adaptée comme des LEDs infra-rouges ou un dispositif pour les caméras extérieures. Quand la lumière dans le visible est forte elle capture le ``visible'' comme la caméra standard. Elle a donc un double usage.
+\end{itemize}
+
+Pour activer la caméra il faut lancer ``raspi-config'' et dans le menu activer la caméra.
+
+\end{frame}
+
+\subsection{Capturer des images}
+
+\begin{frame}[containsverbatim]
+\frametitle{Capturer des images}
+
+Le programme pour capturer des images s'appelle raspistill. 
+
+pour capturer une image il suffit de faire~:
+
+\begin{verbatim}
+raspistill -o testcapture.jpg
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Capturer des images}
+
+Pour régler la définition, il y a les arguments ``w'' et ``h''.
+
+\begin{verbatim}
+raspistill -w 1920 -h 1080 -o fullhdcapture.jpg
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Capturer des images}
+
+Attention il y a un temps de latence avant la prise de vue ! Par défaut ce temps est de 5 secondes.
+
+Pour éliminer ce temps de latence il faut utiliser le paramètre ``t''. Le temps à indiquer est un entier en millisecondes.
+
+\begin{verbatim}
+# pas de temps de latence
+raspistill -t 1 -o tensecondcapture.jpg
+# temps de latence d'une minute
+raspistill -t 60000 -o tensecondcapture.jpg
+\end{verbatim}
+
+Le voyant de la caméra est rouge quand on prends un cliché.
+
+\end{frame}
+
+
+\subsection{Capturer des vidéos}
+
+\begin{frame}[containsverbatim]
+\frametitle{Capturer des vidéos}
+
+Cette fois la commande est ``raspivid''. Par défaut elle encode en h264, un format propriétaire.
+
+\begin{verbatim}
+raspivid -o testvideo.h264
+\end{verbatim}
+
+Le temps de capture par défaut est de 5 secondes. 
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Capturer des vidéos}
+
+Pour le modifier, il suffit d'utiliser l'argument ``t'' toujours en millisecondes
+
+\begin{verbatim}
+raspivid -t 60000 -o testvideo.h264
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Capturer des vidéos}
+
+Pour changer la résolution ce sont les mêmes arguments que pour ``raspistill''~:
+
+\begin{verbatim}
+raspivid -w 1280 -h 720 -t 60000 -o testvideo.h264
+\end{verbatim}
+
+Selon les modèles de caméras, les possibilités en matière de définition varient.
+
+\end{frame}
+
+\subsection{Timelapse video}
+
+\begin{frame}[containsverbatim]
+\frametitle{Timelapse}
+
+Vous pouvez programmer la caméra pour prendre des photos à intervalle régulier. Par exemple pour prendre durant une minute une image toutes les secondes~:
+\begin{verbatim}
+raspistill -o frame%08d.jpg -tl 10000 -t 600000
+\end{verbatim}
+
+Dans ce cas vous verrez des fichiers appelés frame00000001.jpg, frame00000002.jpg, etc. dans le répertoire courant.
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Timelapse}
+
+Pour les transformer en vidéo, il faut utiliser un utilitaire ``avconv''. Pour l'installer~:
+
+\begin{verbatim}
+$sudo apt-get install libav-tools
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Timelapse}
+
+Ensuite~:
+
+\begin{verbatim}
+avconv -r 10 -i frame%08d.jpg -r 10 -vcodec libx264 timelapse.mp4
+\end{verbatim}
+
+L'argument r indique le nombre de frames par secondes. L'argument vcodec indique le type de compression.
+
+``avconv'' est un outil très complexe avec lequel on peut beaucoup de choses.
+
+\end{frame}

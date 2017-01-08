@@ -1,0 +1,70 @@
+\section{Démarrage}
+
+\begin{frame}[containsverbatim]
+\frametitle{Démarrage}
+
+\begin{enumerate}
+	\item il va chercher un premier fichier bootcode sur la partition FAT32 qui est exécuté par le GPU
+	\item il va chercher un second fichier start\_elf sur la partition FAT32 qui est exécuté par le GPU
+	\item le GPU va sonner le CPU pour qu'il démarre en passant le noyau avec les arguments qui vont bien
+	\item Le CPU se lance avec le kernel (noyau) et le démarrage devient celui de Linux~:
+		\begin{itemize}
+			\item chargement en mémoire du kernel
+			\item montage en lecture de la partition /
+			\item ...
+		\end{itemize}
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Démarrage}
+
+Le démarrage se fait à l'aide du GPU et non du CPU.
+
+Les fichiers de démarrage du GPU \emph{bootcode} et \emph{start\_elf} sont propriétaires et sont distribués sous la forme de binaire.
+
+Le démarrage ne se fait pas avec les outils GNU/Linux habituel : \emph{grub} ou \emph{lilo} comme sur un PC normal. Le démarrage va dépendre de la présence de cette fameuse partition fat32 au début de la carte. 
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Démarrage}
+Le fichier important sur un Raspberry est le fichier ``config.txt''. En effet ce fichier est utilisé pour personnaliser le démarrage du Pi en ajoutant la caméra, modifier la mémoire réservé au gpu, ... On y trouve aussi plein de paramètres pour configurer la sortie HDMI si vous lancez le Pi avec une interface graphique.
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Gestion de la mémoire}
+
+La mémoire d'un Raspberry est commune entre le GPU et le CPU. Selon l'usage que vous faites du Raspberry, par exemple utiliser ou non la caméra ou l'utiliser comme centre multimédia, il peut être intéressant de modifier la quantité de mémoire allouée au GPU. 
+
+Le minimum pour le GPU est 16Mo. Il est nécessaire d'avoir 64Mo pour utiliser la caméra qui est aussi la valeur par défaut~:
+\begin{verbatim}
+gpu_mem=16
+\end{verbatim} 
+Ici on règle la mémoire à 16Mo
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+\frametitle{Gestion de la mémoire}
+Les valeurs maximales pour la mémoire attribuée au GPU sont quant à elles de 448Mo pour 512Mo de mémoire et 944Mo pour 1024Mo de mémoire.
+
+Il y a aussi la possibilité de définir la mémoire en fonction de la taille mémoire installée sur le Pi. La spécification de la mémoire en fonction de la taille mémoire installée écrase le paramètre fixé par ``gpu\_mem''.
+
+\begin{verbatim}
+gpu_mem_1024=64
+gpu_mem_512=32
+gpu_mem_256=16
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Gestion de la mémoire}
+
+Ici on fixe 64Mo pour une mémoire de 1Go (Raspberry Pi 3), 32Mo pour une Raspberry Pi2+, ... Ces paramètres sont utiles si vous personnalisez une carte pour l'installer sur différents Pi.
+
+Les paramètres de ``config.txt'' pour la plupart ne sont pas nécessairement à taper à la main dans le fichier. En effet l'utilitaire ``raspi-config'' permet d'éditer le fichier via un menu plus convivial.
+
+\end{frame}

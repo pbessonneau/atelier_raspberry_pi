@@ -1,0 +1,14 @@
+\beamer@endinputifotherversion {3.36pt}
+\select@language {french}
+\beamer@sectionintoc {1}{D\IeC {\'e}marrage}{3}{0}{1}
+\beamer@sectionintoc {2}{Connexion SSH \IeC {\`a} la Pi}{9}{0}{2}
+\beamer@subsectionintoc {2}{1}{Se connecter \IeC {\`a} la Pi}{9}{0}{2}
+\beamer@subsectionintoc {2}{2}{Cr\IeC {\'e}er une clef pour la connexion sans mot de passe}{10}{0}{2}
+\beamer@sectionintoc {3}{Les utilitaires de configuration de la Pi}{13}{0}{3}
+\beamer@subsectionintoc {3}{1}{raspi-config}{14}{0}{3}
+\beamer@subsectionintoc {3}{2}{rpi-update}{16}{0}{3}
+\beamer@sectionintoc {4}{S\IeC {\'e}curisation de votre Raspberry Pi}{17}{0}{4}
+\beamer@subsectionintoc {4}{1}{Changer le mot de passe}{17}{0}{4}
+\beamer@subsectionintoc {4}{2}{Pare-feu}{20}{0}{4}
+\beamer@subsectionintoc {4}{3}{Mise \IeC {\`a} jour}{28}{0}{4}
+\beamer@subsectionintoc {4}{4}{Bloquer les connexions SSH non bas\IeC {\'e}es sur les clefs}{32}{0}{4}

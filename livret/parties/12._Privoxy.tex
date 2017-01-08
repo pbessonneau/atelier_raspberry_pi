@@ -1,0 +1,86 @@
+\section{Installer Privoxy}
+
+Privoxy est un proxy qui ne met pas en cache mais filtre le contenu des pages lues pour enlever notamment les publicités et peut également modifier les pages web. Il va filtrer la majorité des publicités sur le protocole HTTP. En effet souvent les contenus publicitaires relèvent du protocole HTTP et non HTTPS même si la page est cryptée.
+
+\subsection{Installation}
+
+Pour l'installation il suffit de faire un~:
+\begin{verbatim}
+$sudo apt-get install privoxy
+\end{verbatim}
+
+Il y a quelques réglages à faire. Tout d'abord il faut le configurer pour qu'il écoute le réseau local.
+
+\begin{verbatim}
+$sudo nano +761 /etc/privoxy/config
+listen-address  192.168.0.56:8118
+\end{verbatim}
+
+On va enlever le logging de privoxy pour éviter de stocker votre historique Web (bien que par défaut privoxy ne stocke que les évènements graves). Vous devez le réactiver si vous avez des problèmes de navigation pour le débogage.
+
+\begin{verbatim}
+$sudo nano +455 /etc/privoxy/config
+#logfile logfile
+\end{verbatim}
+
+Pour limiter l'accès à votre réseau local (c'est mieux\dots), il suffit de faire~:
+\begin{verbatim}
+$sudo nano +1062 /etc/privoxy/config
+permit-access  192.168.0.0/24
+\end{verbatim}
+
+On redémarre le serveur pour tenir compte des changements~:
+\begin{verbatim}
+$sudo service privoxy restart
+\end{verbatim}
+
+Ensuite il y a un nouveau port ouvert, le port 8118, il faut donc modifier le firewall. Soit avec~:
+\begin{verbatim}
+$sudo dpkg-reconfigure arno-iptables-firewall
+\end{verbatim}
+
+ou bien dans le fichier du firewall
+
+\begin{verbatim}
+$IPTABLES -A TCP -p tcp --dport 8118 -j ACCEPT
+\end{verbatim}
+
+Ensuite il faut dans votre navigateur, régler le proxy~:
+\begin{description}
+	\item [Firefox] je vous conseille d'utiliser l'extension FoxyProxy qui permet de changer à la volée le proxy
+	\item [Chromium] SwitchyOmega qui permet de changer à la volée le proxy
+\end{description}
+
+Si vous voulez que le proxy se configure automatiquement pour les machines de votre réseau. Il faut pouvoir ajouter une ligne à la configuration de votre serveur DHCP et mettre à disposition un fichier sur le serveur web. La manipulation est expliquée \href{https://www.howtoforge.com/squid-proxy-server-on-ubuntu-9.04-server-with-dansguardian-clamav-and-wpad-proxy-auto-detection}{ici}. Pour suivre ce tutoriel, il vous faut avoir un serveur DHCP sur une machine de type GNU/Linux.
+
+\subsection{Configuration}
+
+Les fichiers ``user.action'' et ``user.filter'' sont là que vous allez faire vos modifications.
+
+Par exemple si vous souhaitez qu'un site ne soit pas filtré, comme \href{numerama.com}{numerama} un super site que vous voulez aider en acceptant la pub. Il faut faire~:
+
+\begin{verbatim}
+$sudo nano +158 user.action
+.numerama.com
+\end{verbatim}
+
+Par défaut, les cookies sont autorisés seulement s'il s'agit de cookies de session, si vous voulez qu'un cookie à plus long terme soit conservé, il faut ajouter le site dans la partie adéquate~:
+\begin{verbatim}
+$sudo nano +90 user.action
+.github.com
+\end{verbatim}
+
+Vous pouvez utiliser le fichier trust pour limiter les web à visiter comme par exemple limiter l'accès seulement à quelques sites, pour les enfants par exemple.
+
+\begin{verbatim}
+$sudo nano +511 config
+trustfile trust
+\end{verbatim}
+
+Dans trust, vous pouvez les sites qui sont autorisés~:
+\begin{verbatim}
+~.disneylandparis.fr
+~.raspberrypi.org
+\end{verbatim}
+
+N'oubliez pas de relancer le serveur.

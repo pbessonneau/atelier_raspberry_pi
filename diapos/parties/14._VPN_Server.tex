@@ -1,0 +1,249 @@
+\section{Installer un serveur VPN}
+
+\begin{frame}[containsverbatim]
+\frametitle{Qu'est ce que qu'un VPN ?}
+
+Le but est de créer un serveur VPN. Qu'est ce que le VPN ? C'est l'acronyme de Virtual Private Network. Il va créer un pont crypté entre deux ordinateurs et les requêtes réseaux vont être déportés sur le serveur. Toutes les requêtes réseaux du client vont sortir seulement à travers du tunnel crypté.
+
+Son utilité ? Avoir son serveur VPN est utile par exemple quand vous êtes dans un Starbucks ou dans un hotel. 
+
+Il est à noter que des serveurs VPN commerciaux existent. 
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Qu'est ce que qu'un VPN ?}
+
+Nous ferons un VPN utilisant le protocole le plus sécurisé~: le protocole OpenVPN.
+
+La cryptage est asymétrique avec une paire clef privée et clef publique. Il y a une paire de clefs pour le serveur et une paire pour le client.
+
+\end{frame}
+
+
+\subsection{Installation}
+
+\begin{frame}[containsverbatim]
+\frametitle{Installation}
+
+L'installation à la main supposerait~:
+\begin{enumerate}
+	\item télécharger les paquets nécessaires
+	\item créer les deux paires de clefs
+	\item configurer le serveur
+	\item préparer le fichier client
+	\item installer la connexion VPN sur le client avec le fichier client
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Installation}
+
+Fort heureusement un script est disponible \href{https://github.com/Nyr/openvpn-install}{ici}. Il facilite la manœuvre et le rend interactif~:
+
+\begin{verbatim}
+$wget https://git.io/vpn -O openvpn-install.sh 
+$sudo bash openvpn-install.sh
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Installation}
+
+Le premier renseignement demandé est l'IP du Raspberry sur le réseau interne. Pour moi 192.168.0.56.
+
+Le second est le port par défaut. Ce n'est pas la peine de le changer.
+
+Ensuite vous devez choisir les DNS qui seront utilisés pour que le serveur puisse résoudre les noms de domaine en sortie du VPN (\href{https://www.opennicproject.org/}{OpenNIC} de préférence)
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Installation}
+
+Ensuite il vous demande le nom du fichier à créer pour configurer le client.
+
+Il vous demande de fournir l'''external IP'', c'est qu'il a remarqué que vous étiez derrière un NAT donc il demande l'adresse publique. 
+
+Enfin il vous demande le mot de passe pour vous connecter au VPN. 
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Installation}
+
+Après le script va télécharger et installer les paquets. Il installe notamment~:
+\begin{itemize}
+	\item OpenVPN, qui est le programme permettant de se connecter à un VPN ou qui permet de faire un serveur VPN.
+	\item Easy-RSA, sur un dépot \href{https://github.com/OpenVPN/easy-rsa}{git}, c'est le programme qui permet de créer facilement des clefs RSA pour le client et pour le serveur. 
+\end{itemize}
+
+L'étape la plus longue est la création de la clef privée du serveur qui peut parfois prendre dix minutes sur un Raspberry Pi 2 si il y a un manque d'entropie.
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Configuration}
+
+Dans le répertoire courant, un nouveau fichier ``.ovpn'' est apparu. C'est le fichier client qui servira à configurer votre portable.
+
+\begin{verbatim}
+client
+dev tun
+proto udp
+...
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Configuration}
+
+Dans le répertoire ``/etc/openvpn'', vous trouverez les clefs du serveur ainsi que le fichier de configuration, ``server.conf'',  auquel il faut faire des modifications.
+
+Il faut modifier la première ligne dans ce fichier de configuration en rajoutant~:
+\begin{verbatim}
+local 192.168.0.56
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Configuration}
+
+Ce qui donne comme fichier de configuration~:
+\begin{verbatim}
+local 192.168.0.56
+port 1194
+proto udp
+...
+\end{verbatim}
+
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+\frametitle{Pare-feu}
+
+Le serveur openvpn se comporte pour ses clients comme un serveur DHCP. 
+
+La ligne ``server'' indique une plage d'adresse doit être une plage d'adresse qui est \emph{absolument différente} de la plage d'adresse que vous utilisez pour votre réseau interne. 
+
+Cette plage d'adresse contient les IPs des clients du VPN. 
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Pare-feu}
+
+Vous savez donc que cette plage d'adresse est le réseau ``interne'' pour le firewall. Vous avez aussi besoin de savoir que l'interface réseau créée par un VPN est ``tun0''. Vous pouvez le vérifier en tapant~:
+\begin{verbatim}
+$ifconfig
+\end{verbatim}  
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Pare-feu}
+
+Il faut modifier le firewall pour qu'il fasse du NAT c'est-à-dire qu'il fasse suivre les paquets du réseau créé par le VPN vers les adresses extérieures. 
+
+Pour ça, si vous utilisez arno-iptables-firewall, il suffit de modifier le fichier de configuration~:
+\begin{verbatim}
+$sudo vi /etc/arno-iptables-firewall/conf.d/00debconf.conf
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Pare-feu}
+
+Et le fichier doit avoir cette tête~:
+\begin{verbatim}
+EXT_IF="eth0"
+EXT_IF_DHCP_IP=1
+OPEN_TCP="22 8118"
+OPEN_UDP="1194"
+INT_IF="tun0"
+NAT=1
+INTERNAL_NET=""
+NAT_INTERNAL_NET="10.8.0.0/24"
+OPEN_ICMP=0
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Pare-feu}
+
+Vous remarquez les réglages pour le réseau interne et le fait qu'on ouvre un port en UDP au port 1194, c'est le port du serveur. Attention, le protocole est le protocole UDP et non TCP.
+
+Ensuite il faudra que sur votre box, vous mettiez une redirection de ports. La manipulation se trouve partout sur internet car c'est la même que pour les applications de partage de fichiers.
+
+Ici la redirection sera le port 1194 en UDP vers l'adresse du Pi sur le port 1194.
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Pare-feu}
+
+Pour un firewall ``à la main'' il faudrait rajouter quelque chose comme ça en fin de fichier de configuration du firewall~:
+\begin{verbatim}
+$iptables --table nat --append POSTROUTING --out-interface eth0 -j MASQUERADE
+$iptables --append FORWARD --in-interface tun0 -j ACCEPT
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Pare-feu}
+
+Ensuite il faut activer le NAT dans le kernel~:
+\begin{verbatim}
+$sudo nano /etc/sysctl.conf
+\end{verbatim}
+
+et décommentez la ligne~:
+
+\begin{verbatim}
+net.ipv4.ip_forward=1
+\end{verbatim}
+
+puis redémarrer ou exécuter
+
+\begin{verbatim}
+$sudo sysctl -p /etc/sysctl.conf
+\end{verbatim}
+
+\end{frame}
+
+\subsection{Ajouter un nouveau client}
+
+\begin{frame}[containsverbatim]
+\frametitle{Ajouter un nouveau client}
+Pour ajouter un nouveau client, un autre ordinateur à la liste des ordinateurs pouvant se connecter, il faut simplement relancer le script et suivre les instructions.
+
+\end{frame}
+
+
+\subsection{Côté client}
+\frametitle{Côté client}
+\begin{frame}[containsverbatim]
+Il vous faut le fichier ``.ovpn'' créé tout à l'heure. Il contient toutes les informations pour vous connecter au serveur.
+
+Sur Linux, il faut installer le paquet ``openvpn'' et si vous utilisez GNOME les paquets pour le gestionnaire de réseaux.
+
+\begin{verbatim}
+$sudo apt-get install openvpn 
+$sudo apt-get install network-manager-openvpn
+$sudo apt-get install network-manager-openvpn-gnome
+\end{verbatim}
+
+Pour KDE, pas besoin du paquet gnome...
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Côté client}
+Pour les gens sous Windows, le logiciel à installer est à télécharger sur le site d'OpenVPN. Il était dans le package que j'avais préparé en avance.
+\end{frame}

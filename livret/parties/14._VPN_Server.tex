@@ -1,0 +1,297 @@
+\section{Installer un serveur VPN}
+
+Le but est de créer un serveur VPN. Qu'est ce que le VPN ? C'est l'acronyme de Virtual Private Network. Il va créer un pont crypté entre deux ordinateurs et les requêtes réseaux vont être déportés sur le serveur. Toutes les requêtes réseaux du client vont sortir seulement à travers du tunnel crypté.
+
+Son utilité ? Avoir son serveur VPN est utile par exemple quand vous êtes dans un Starbucks ou dans un hotel. Vous ne savez qui est à l'écoute sur le réseau et vos communications peuvent être interceptés. Pour éviter ce désagrément, vous activez le VPN et ainsi les communications seront cryptés et hors de portée de ceux qui écoutent. Les requêtes seront ``déplacées'' sur l'ordinateur serveur, votre Raspberry au chaud à la maison.
+
+Il peut également être utilisé comme accès au réseau local pour permettre des réparations sur l'ordinateur d'un tiers (après avoir son accord). Ce système peut se substituer ou s'ajouter à un VNC (Virtual Network Connexion)~: en effet vous pouvez sécuriser l'accès au VNC en passant par le tunnel sécurisé du VPN.
+
+Il est à noter que des serveurs VPN commerciaux existent. Dans ce cas vous données sont cryptées de votre ordinateur à au site du VPN commercial et après passent en clair. Le stockage de vos données de connexion varient selon les opérateurs de VPN que vous utilisez. 
+
+Sur le Raspberry, on peut établir un réseau VPN de type PPTP qui n'est pas le protocole le plus sécurisé. Nous nous intéresserons au protocole le plus sécurisé~: le protocole OpenVPN.
+
+La cryptage est asymétrique avec une paire clef privée et clef publique. Il y a une paire de clefs pour le serveur et une paire pour le client.
+
+\subsection{Installation}
+
+L'installation à la main supposerait~:
+\begin{enumerate}
+	\item télécharger les paquets nécessaires
+	\item créer les deux paires de clefs
+	\item configurer le serveur
+	\item préparer le fichier client
+	\item installer la connexion VPN sur le client avec le fichier client
+\end{enumerate}
+
+Pour en profiter, il faut installer git qui est un logiciel permettant de récupérer des applications à compiler (entre autres)~:
+\begin{verbatim}
+$sudo apt-get install git
+\end{verbatim}
+
+Fort heureusement un script disponible \href{https://github.com/Nyr/openvpn-install}{ici}, facilite ça et le rend interactif~:
+
+\begin{verbatim}
+$wget https://git.io/vpn -O openvpn-install.sh 
+$sudo bash openvpn-install.sh
+\end{verbatim}
+
+Le premier renseignement demandé est l'IP du Raspberry sur le réseau interne. Pour moi 192.168.0.56.
+
+Le second est le port par défaut. Ce n'est pas la peine de le changer.
+
+Ensuite vous devez choisir les DNS qui seront utilisés pour que le serveur puisse résoudre les noms de domaine en sortie du VPN. Je vous conseille OpenDNS bien que OpenDNS appartienne maintenant à Oracle. Le mieux est d'utiliser les serveurs de l'\href{https://www.opennicproject.org/}{OpenNIC}.
+
+Ensuite il vous demande le nom du fichier à créer. Ici on va laisser le nom par défaut. Si vous avez plusieurs profils il vous faudra donner un nom plus explicite.
+
+Il vous demande de fournir l'''external IP'', c'est qu'il a remarqué que vous étiez derrière un NAT donc il demande l'adresse publique qu'il va mettre dans le fichier client pour que ce dernier puisse se connecter au serveur depuis internet. 
+
+Enfin il vous demande le mot de passe pour vous connecter au VPN. Vous devez choisir un mot de passe fort voire très fort car la plupart des applications permettent de le garder en mémoire. 
+
+Après le script va télécharger et installer les paquets. Il installe notamment~:
+\begin{itemize}
+	\item OpenVPN, qui est le programme permettant de se connecter à un VPN ou qui permet de faire un serveur VPN.
+	\item Easy-RSA, sur un dépot \href{https://github.com/OpenVPN/easy-rsa}{git}, c'est le programme qui permet de créer facilement des clefs RSA pour le client et pour le serveur. 
+\end{itemize}
+
+L'étape la plus longue est la création de la clef privée du serveur qui peut parfois prendre dix minutes sur un Raspberry Pi 2 si il y a un manque d'entropie. Pour aller plus vite dans la génération de la client, vous pouvez générer de l'entropie par exemple en téléchargeant quelque chose de gros sur le réseau dans une deuxième session~:
+\begin{verbatim}
+
+\end{verbatim}
+
+
+
+Dans le répertoire courant, un nouveau fichier ``.ovpn'' est apparu. C'est le fichier client qui servira à configurer votre portable.
+
+\begin{verbatim}
+client
+dev tun
+proto udp
+sndbuf 0
+rcvbuf 0
+remote 88.190.40.134 1194
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+remote-cert-tls server
+cipher AES-256-CBC
+comp-lzo
+setenv opt block-outside-dns
+key-direction 1
+verb 3
+...
+\end{verbatim}
+
+Dans le répertoire ``/etc/openvpn'', vous trouverez les clefs du serveur ainsi que le fichier de configuration, ``server.conf'',  auquel il faut faire des modifications.
+
+Il faut modifier la première ligne dans ce fichier de configuration en rajoutant~:
+\begin{verbatim}
+local 192.168.0.56
+\end{verbatim}
+
+Ce qui donne comme fichier de configuration~:
+\begin{verbatim}
+local 192.168.0.56
+port 1194
+proto udp
+dev tun
+sndbuf 0
+rcvbuf 0
+ca ca.crt
+cert server.crt
+key server.key
+dh dh.pem
+tls-auth ta.key 0
+topology subnet
+server 10.8.0.0 255.255.255.0
+ifconfig-pool-persist ipp.txt
+push "redirect-gateway def1 bypass-dhcp"
+push "dhcp-option DNS 208.67.222.222"
+push "dhcp-option DNS 208.67.220.220"
+keepalive 10 120
+cipher AES-256-CBC
+comp-lzo
+user nobody
+group nogroup
+persist-key
+persist-tun
+status openvpn-status.log
+verb 3
+crl-verify crl.pem
+\end{verbatim}
+
+Le serveur openvpn se comporte pour ses clients comme un serveur DHCP. La ligne ``server'' indique une plage d'adresse doit être une plage d'adresse qui est \emph{absolument différente} de la plage d'adresse que vous utilisez pour votre réseau interne. 
+
+Cette plage d'adresse contient les IPs des clients du VPN. Vous savez donc que cette plage d'adresse est le réseau ``interne'' pour le firewall. Vous avez aussi besoin de savoir que l'interface réseau créée par un VPN est ``tun0''. Vous pouvez le vérifier en tapant~:
+\begin{verbatim}
+$ifconfig
+\end{verbatim}  
+
+Pour ajouter les serveurs DNS de l'OpenNIC, il suffit de les choisir sur leur \href{https://www.opennicproject.org/}{page}.
+
+On choisit par exemple 87.98.175.85 et 193.183.98.154. Cela nous donnerait comme fichier de configuration~:
+\begin{verbatim}
+local 192.168.0.56
+port 1194
+proto udp
+dev tun
+sndbuf 0
+rcvbuf 0
+ca ca.crt
+cert server.crt
+key server.key
+dh dh.pem
+tls-auth ta.key 0
+topology subnet
+server 10.8.0.0 255.255.255.0
+ifconfig-pool-persist ipp.txt
+push "redirect-gateway def1 bypass-dhcp"
+push "dhcp-option DNS 87.98.175.85"
+push "dhcp-option DNS 193.183.98.154"
+keepalive 10 120
+cipher AES-256-CBC
+comp-lzo
+user nobody
+group nogroup
+persist-key
+persist-tun
+status openvpn-status.log
+verb 3
+crl-verify crl.pem
+\end{verbatim}
+
+Ensuite redémarrez le serveur.
+
+Pour respectivement démarrer, éteindre et redémarrer le serveur OpenVPN, il suffit de taper~:
+\begin{verbatim}
+$sudo service openvpn start
+$sudo service openvpn stop
+$sudo service openvpn restart
+\end{verbatim}
+
+Il faut modifier le firewall pour qu'il fasse du NAT c'est-à-dire qu'il fasse suivre les paquets du réseau créé par le VPN vers les adresses extérieures. Pour ça, il faut un firewall sous Linux qui est correctement paramétré.
+
+Pour ça, si vous utilisez arno-iptables-firewall, il suffit de modifier le fichier de configuration~:
+\begin{verbatim}
+$sudo vi /etc/arno-iptables-firewall/conf.d/00debconf.conf
+\end{verbatim}
+
+Et le fichier doit avoir cette tête~:
+\begin{verbatim}
+EXT_IF="eth0"
+EXT_IF_DHCP_IP=1
+OPEN_TCP="22 8118"
+OPEN_UDP="1194"
+INT_IF="tun0"
+NAT=1
+INTERNAL_NET=""
+NAT_INTERNAL_NET="10.8.0.0/24"
+OPEN_ICMP=0
+\end{verbatim}
+
+Vous remarquez les réglages pour le réseau interne et le fait qu'on ouvre un port en UDP au port 1194, c'est le port du serveur. Attention, le protocole est le protocole UDP et non TCP.
+
+Ensuite il faudra que sur votre box, vous mettiez une redirection de ports. La manipulation se trouve partout sur internet car c'est la même que pour les applications de partage de fichiers.
+
+Ici la redirection sera le port 1194 en UDP vers l'adresse du Pi sur le port 1194.
+
+Pour un firewall ``à la main'' il faudrait rajouter quelque chose comme ça en fin de fichier de configuration du firewall~:
+\begin{verbatim}
+$iptables --table nat --append POSTROUTING --out-interface eth0 -j MASQUERADE
+$iptables --append FORWARD --in-interface tun0 -j ACCEPT
+\end{verbatim}
+
+Ensuite il faut activer le NAT dans le kernel~:
+\begin{verbatim}
+$sudo nano /etc/sysctl.conf
+\end{verbatim}
+
+et décommentez la ligne~:
+
+\begin{verbatim}
+net.ipv4.ip_forward=1
+\end{verbatim}
+
+Puis il faut redémarrer ou exécuter~:
+
+\begin{verbatim}
+$sudo sysctl -p /etc/sysctl.conf
+\end{verbatim}
+
+\subsection{Ajouter la possibilité de se connecter en réseau local}
+
+Pour utiliser votre imprimante, accéder à un ordinateur du réseau local,\dots à travers le VPN pour un peu partout comme chez vous, il suffit de modifier le réglage du serveur.
+
+Attention si ce réseau local du client et du serveur ont le même masque, les connexions en cours seront perturbées et les nouvelles connexions passeront par le tunnel. Il vaut mieux pratiquer ce sport avec deux masques de réseau différent entre le réseau local du serveur  et le réseau local du client.
+
+Si le réseau serveur est en 192.168.0.0, il suffit d'ajouter une ligne à la configuration du serveur~:
+\begin{verbatim}
+local 192.168.0.56
+port 1194
+proto udp
+dev tun
+sndbuf 0
+rcvbuf 0
+ca ca.crt
+cert server.crt
+key server.key
+dh dh.pem
+tls-auth ta.key 0
+topology subnet
+server 10.8.0.0 255.255.255.0
+ifconfig-pool-persist ipp.txt
+push "redirect-gateway def1 bypass-dhcp"
+push "dhcp-option DNS 87.98.175.85"
+push "dhcp-option DNS 193.183.98.154"
+push “route 192.168.0.0 255.255.255.0”
+keepalive 10 120
+cipher AES-256-CBC
+comp-lzo
+user nobody
+group nogroup
+persist-key
+persist-tun
+status openvpn-status.log
+verb 3
+crl-verify crl.pem
+\end{verbatim}
+
+Ensuite redémarrez le serveur.
+
+Pour respectivement démarrer, éteindre et redémarrer le serveur OpenVPN, il suffit de taper~:
+\begin{verbatim}
+$sudo service openvpn start
+$sudo service openvpn stop
+$sudo service openvpn restart
+\end{verbatim}
+
+La ligne ajoutée est~:
+\begin{verbatim}
+push “route 192.168.0.0 255.255.255.0”
+\end{verbatim}
+
+Elle dit, redirige le trafic du 192.168.0.0 vers le tunnel VPN. 
+
+
+
+\subsection{Ajouter un nouveau client}
+
+Pour ajouter un nouveau client, un autre ordinateur à la liste des ordinateurs pouvant se connecter, il faut simplement relancer le script et suivre les instructions.
+
+\subsection{Côté client}
+
+Il vous faut le fichier ``.ovpn'' créé tout à l'heure. Il contient toutes les informations pour vous connecter au serveur.
+
+Sur Linux, il faut installer le paquet ``openvpn'' et si vous utilisez GNOME les paquets pour le gestionnaire de réseaux.
+
+
+
+\begin{verbatim}
+$sudo apt-get install openvpn 
+$sudo apt-get install network-manager-openvpn
+$sudo apt-get install network-manager-openvpn-gnome
+\end{verbatim}
+
+Pour KDE, pas besoin du paquet gnome...
+
+Pour les gens sous Windows, le logiciel à installer est à télécharger sur le site d'OpenVPN. Il était dans le package que j'avais préparé en avance.

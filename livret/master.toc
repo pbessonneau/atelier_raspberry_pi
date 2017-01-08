@@ -1,0 +1,43 @@
+\select@language {french}
+\contentsline {section}{\numberline {1}Petit historique du Raspberry Pi}{4}{section.1}
+\contentsline {section}{\numberline {2}Les caract\IeC {\'e}ristiques du Pi 3}{5}{section.2}
+\contentsline {section}{\numberline {3}Formatage et \IeC {\'e}criture de la carte SD}{6}{section.3}
+\contentsline {subsection}{\numberline {3.1}T\IeC {\'e}l\IeC {\'e}chargement de l'image}{6}{subsection.3.1}
+\contentsline {subsection}{\numberline {3.2}Sauvegarde de la carte SD}{8}{subsection.3.2}
+\contentsline {section}{\numberline {4}Personnalisation de la carte avant le gravage}{10}{section.4}
+\contentsline {subsection}{\numberline {4.1}Activer SSH}{10}{subsection.4.1}
+\contentsline {subsection}{\numberline {4.2}\'Edition des param\IeC {\`e}tres r\IeC {\'e}seaux}{10}{subsection.4.2}
+\contentsline {subsection}{\numberline {4.3}Ajout d'un partition /home}{12}{subsection.4.3}
+\contentsline {subsection}{\numberline {4.4}Pr\IeC {\'e}server la carte SD}{14}{subsection.4.4}
+\contentsline {subsubsection}{\numberline {4.4.1}Mettre la carte SD en lecture seule}{14}{subsubsection.4.4.1}
+\contentsline {subsubsection}{\numberline {4.4.2}Ajuster les param\IeC {\`e}tres pour pr\IeC {\'e}server la carte SD}{15}{subsubsection.4.4.2}
+\contentsline {subsection}{\numberline {4.5}D\IeC {\'e}marage}{16}{subsection.4.5}
+\contentsline {section}{\numberline {5}Connexion SSH \IeC {\`a} la Pi}{18}{section.5}
+\contentsline {subsection}{\numberline {5.1}Se connecter \IeC {\`a} la Pi}{18}{subsection.5.1}
+\contentsline {subsection}{\numberline {5.2}Cr\IeC {\'e}er une clef pour la connexion sans mot de passe}{18}{subsection.5.2}
+\contentsline {section}{\numberline {6}Les utilitaires de configuration de la Pi}{20}{section.6}
+\contentsline {subsection}{\numberline {6.1}raspi-config}{20}{subsection.6.1}
+\contentsline {subsection}{\numberline {6.2}rpi-update}{20}{subsection.6.2}
+\contentsline {section}{\numberline {7}S\IeC {\'e}curisation de votre Raspberry Pi}{21}{section.7}
+\contentsline {subsection}{\numberline {7.1}Changer le mot de passe}{21}{subsection.7.1}
+\contentsline {subsection}{\numberline {7.2}Pare-feu}{21}{subsection.7.2}
+\contentsline {subsection}{\numberline {7.3}Mise \IeC {\`a} jour}{24}{subsection.7.3}
+\contentsline {subsection}{\numberline {7.4}Bloquer les connexions SSH non bas\IeC {\'e}es sur les clefs}{24}{subsection.7.4}
+\contentsline {section}{\numberline {8}Installer Privoxy}{25}{section.8}
+\contentsline {subsection}{\numberline {8.1}Installation}{25}{subsection.8.1}
+\contentsline {subsection}{\numberline {8.2}Configuration}{26}{subsection.8.2}
+\contentsline {section}{\numberline {9}Installer un serveur VPN}{27}{section.9}
+\contentsline {subsection}{\numberline {9.1}Installation}{27}{subsection.9.1}
+\contentsline {subsection}{\numberline {9.2}Ajouter la possibilit\IeC {\'e} de se connecter en r\IeC {\'e}seau local}{31}{subsection.9.2}
+\contentsline {subsection}{\numberline {9.3}Ajouter un nouveau client}{33}{subsection.9.3}
+\contentsline {subsection}{\numberline {9.4}C\IeC {\^o}t\IeC {\'e} client}{33}{subsection.9.4}
+\contentsline {section}{\numberline {10}Application avec Python sur les ports GPIO}{34}{section.10}
+\contentsline {subsection}{\numberline {10.1}Qu'est ce que le GPIO ?}{34}{subsection.10.1}
+\contentsline {subsection}{\numberline {10.2}Eclairer une diode}{34}{subsection.10.2}
+\contentsline {subsection}{\numberline {10.3}PiFaceCAD}{37}{subsection.10.3}
+\contentsline {subsection}{\numberline {10.4}Sense HAT}{38}{subsection.10.4}
+\contentsline {section}{\numberline {11}Application avec la cam\IeC {\'e}ra}{40}{section.11}
+\contentsline {subsection}{\numberline {11.1}Description des cam\IeC {\'e}ras}{40}{subsection.11.1}
+\contentsline {subsection}{\numberline {11.2}Capturer des images}{40}{subsection.11.2}
+\contentsline {subsection}{\numberline {11.3}Capturer des vid\IeC {\'e}os}{41}{subsection.11.3}
+\contentsline {subsection}{\numberline {11.4}Timelapse video}{41}{subsection.11.4}

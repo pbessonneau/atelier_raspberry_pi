@@ -1,0 +1,43 @@
+\section{Les utilitaires de configuration de la Pi}
+
+Pour simplifier les choses pour les débutants, les concepteurs de la Raspbian ont inclus deux utilitaires spécifique à la Pi dans la distribution.
+
+Le premier outil est \emph{raspi-config}. C'est un utilitaire clique-bouton (NCURSES en mode console) pour accéder à des fonctions spécifiques de la Pi ou pour lancer des commandes Linux un peu complexes pour les débutants. On y trouve le jeux de caractères utilisé par la Pi, le fait d'activer ou non la PiCam, le SPI, \dots
+
+L'autre outil est \emph{rpi-update} qui permet de mettre à jour le firmware de la Pi. Il est à lancer régulièrement pour avoir son système à jour.  C'est différent des mises à jour du système Raspbian.
+
+\subsection{raspi-config}
+
+Quand vous lancez un Rapsberry Pi, il est important de faire quelques réglages~:
+\begin{enumerate}
+	\item Changer le mot de passe
+	\item Internationalization Options, changer les locales (fr\_FR.UTF-8 UTF-8)
+	\item Internationalization Options, changer le timezone (Paris)
+\end{enumerate}
+
+Toutes ces commandes sont en fait des commandes debian mais elle sont plus simples à utiliser dans ``raspi-config''.
+
+Parmi les autres options, il y a l'activation de la caméra et dans les options avancées, il y a également des choses intéressantes~:
+\begin{description}
+	\item[Hostname] Changer l'Hostname pour y accéder par ce nom plutôt que par l'ip
+	\item[Memory Split] la mémoire allouée au GPU
+	\item[SPI] utile pour activer la compatibilité avec des hat comme PiFace
+	\item[\dots]
+\end{description}
+
+\subsection{rpi-update}
+
+Cet outil est lié au Raspberry, c'est pour récupérer et mettre à jour le firmware. Il faut l'installer absolument pour mettre à jour régulièrement le firmware de votre Pi.
+
+\begin{verbatim}
+$sudo apt-get install rpi-update
+\end{verbatim}
+
+En plus des paquets, il est important de maintenir à jour son Pi y compris son firmware. Il faut éviter absolument de couper l'alimentation ou de couper la connexion SSH pendant la mise à jour du firmware.
+
+La commande est très simple~:
+
+\begin{verbatim}
+$rpi-update
+\end{verbatim}
+

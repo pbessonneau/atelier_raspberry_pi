@@ -1,0 +1,287 @@
+\section{Personnalisation de la carte avant le gravage}
+
+\subsection{Activer SSH}
+
+Maintenant pour des raisons de sécurité, sur Raspbian, SSH est désactivé par défaut. Ceci pour éviter, à cause des gens qui ne modifient pas les mots de passe par défaut, que les Pi ne constituent un réservoir de bots.
+
+\href{http://www.framboise314.fr/une-mise-a-jour-de-securite-pour-raspbian/}{http://www.framboise314.fr/une-mise-a-jour-de-securite-pour-raspbian/}
+
+
+\href{https://www.raspberrypi.org/blog/a-security-update-for-raspbian-pixel/}{https://www.raspberrypi.org/blog/a-security-update-for-raspbian-pixel/}
+
+Pour activer le SSH, il faut créer un fichier s'appelant ``ssh'' dans la partition fat32 de démarrage ou passer par ``raspi-config'' en utilisant un clavier et un écran.
+
+Sous Linux, rien de plus simple, il suffit de faire:
+\begin{verbatim}
+touch /media/pascal/boot/ssh
+\end{verbatim}
+
+\subsection{\'Edition des paramètres réseaux}
+
+Une fois branchée la Pi va récupérer une adresse IP auprès du serveur DHCP du réseau. Le plus souvent c'est votre box internet.
+
+Il vous faudra donc regarder les logs (ou l'interface) de votre serveur DHCP (généralement votre box internet) pour voir quel IP à été attribué à la Pi pour réussir à vous connecter.
+
+Si vous êtes sous Linux, vous pouvez trouver le Pi en scannant le réseau à la recherche des ordinateurs avec un serveur SSH accessible~:
+\begin{verbatim}
+nmap -p 22 192.168.0.0/16
+\end{verbatim}
+
+
+Sous Linux, vous avez la possibilité de fixer l'IPavant le démarrage, il suffit de faire~:
+\begin{verbatim}
+cd ~
+mkdir pi
+sudo mount /dev/sdb2 pi
+\end{verbatim}
+
+Ensuite le fichier \emph{/home/pascal/pi/etc/network/interfaces} est à éditer pour le personnaliser et donc donner une adresse fixe au Pi.
+
+On retrouve les noms d'interface de debian, assez simples, pour les interfaces réseaux~: 
+\begin{itemize}
+	\item eth0 pour le LAN
+	\item wlan0 pour le wifi que ce soit pour le Raspberry Pi 3 ou une clef Wifi additionnelle sur une Raspberry plus ancienne.
+\end{itemize}
+
+Sur une Raspberry Pi 3 si vous rajoutez une clef USB WiFi, vous aurez un wlan0 et un wlan1 qui sont normalement la carte interne et la clef USB respectivement.
+
+Dans le fichier ``interfaces'', on remplace la ligne de ``eth0'' par ce contenu~:
+\begin{verbatim}
+allow-hotplug eth0
+iface eth0 inet static
+address 192.168.0.40
+netmask 255.255.255.0
+gateway 192.168.0.1
+\end{verbatim}
+
+Idem pour le WiFi avec une modification pour accéder aux identifiants et mots de passe du réseau WiFi auquel on se connecte~:
+\begin{verbatim}
+allow-hotplug wlan0
+iface wlan0 inet static
+address 192.168.0.41
+netmask 255.255.255.0
+gateway 192.168.0.1
+wpa-roam /etc/wpa_supplicant/wpa_supplicant.conf
+\end{verbatim}
+
+Attention au cours de ces manipulations, il faut ne pas se tromper entre votre machine (\emph{/etc/network/interfaces}) et le Pi (\emph{/home/pascal/pi/etc/network/interfaces}). Sinon c'est un peu la catastrophe ;)
+
+Et le fichier de configuration ``wpa\_supplicant.conf'' est à modifier selon la configuration de votre réseau sans fil~:
+
+\begin{verbatim}
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+
+# à adapter selon la configuration de votre réseau
+network={
+    ssid="freebox_AERFTRE"		
+    proto=WPA RSN				
+    key_mgmt=WPA-PSK			
+    psk="maphrasedepasse"		
+}
+\end{verbatim}
+
+Par la suite si vous voulez que l'IP ne soit pas fixée par la Pi, vous pourrez le remettre en automatique et fixer un bail DHCP en récupérant l'(es) adresse(s) MAC de la Raspberry Pi.
+
+\begin{verbatim}
+iface eth0 inet dhcp
+
+ou pour wlan0
+
+allow-hotplug wlan0
+iface wlan0 inet static
+wpa-roam /etc/wpa_supplicant/wpa_supplicant.conf
+iface default inet dhcp
+\end{verbatim}
+
+\begin{verbatim}
+$ifconfig
+eth0      Link encap:Ethernet  HWaddr b8:27:eb:1a:34:64  
+          inet adr:192.168.0.50  Bcast:192.168.0.255  Masque:255.255.255.0
+          adr inet6: fe80::ba27:ebff:fe1a:4048/64 Scope:Lien
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:3630835 errors:0 dropped:13 overruns:0 frame:0
+          TX packets:3365928 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 lg file transmission:1000 
+          RX bytes:2510486112 (2.3 GiB)  TX bytes:2571670733 (2.3 GiB)
+
+lo        Link encap:Boucle locale  
+          inet adr:127.0.0.1  Masque:255.0.0.0
+          adr inet6: ::1/128 Scope:Hôte
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:284 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:284 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 lg file transmission:1 
+          RX bytes:28401 (27.7 KiB)  TX bytes:28401 (27.7 KiB)
+
+wlan0     Link encap:Ethernet  HWaddr 74:da:38:1a:b4:b8  
+          UP BROADCAST MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:2 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 lg file transmission:1000 
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+\end{verbatim}
+
+Par exemple ici l'adresse MAC pour eth0 est b8:27:eb:1a:34:64 et pour wlan0 l'adresse MAC est 74:da:38:1a:b4:b8.
+
+\subsection{Ajout d'un partition /home}
+
+Le plus simple est d'utiliser gparted ou parted. Ceci est à faire avant l'écriture de la carte depusi un ordinateur GNU/Linux.
+
+Ici la carte est le péripherique ``sdb'' mais vous devez le remplacer par l'identifiant de votre disque. 
+
+Avec parted en ligne de commande, on va agrandir un peu la partition système~:
+\begin{verbatim}
+$parted /dev/sdb
+$print
+
+Modèle: Generic USB SD Reader (scsi)
+Disque /dev/sdb : 31,9GB
+Taille des secteurs (logiques/physiques): 512B/512B
+Table de partitions : msdos
+Disk Flags: 
+
+Numéro  Début   Fin     Taille  Type     Système de fichiers  Fanions
+ 1      4194kB  70,3MB  66,1MB  primary  fat16                lba
+ 2      70,3MB  1390MB  1320MB  primary  ext4
+
+$resizepart 2
+$2000MB
+$print
+
+Modèle: Generic USB SD Reader (scsi)
+Disque /dev/sdb : 31,9GB
+Taille des secteurs (logiques/physiques): 512B/512B
+Table de partitions : msdos
+Disk Flags: 
+
+Numéro  Début   Fin     Taille  Type     Système de fichiers  Fanions
+ 1      4194kB  70,3MB  66,1MB  primary  fat16                lba
+ 2      70,3MB  2000MB  1930MB  primary  ext4
+\end{verbatim}
+
+Pour ajouter la partition ``/home''~:
+
+\begin{verbatim}
+$mkpart
+$primaire
+$ext4
+$2001MB
+$31900MB
+$print
+
+Modèle: Generic USB SD Reader (scsi)
+Disque /dev/sdb : 31,9GB
+Taille des secteurs (logiques/physiques): 512B/512B
+Table de partitions : msdos
+Disk Flags: 
+
+Numéro  Début   Fin     Taille  Type     Système de fichiers  Fanions
+ 1      4194kB  70,3MB  66,1MB  primary  fat16                lba
+ 2      70,3MB  2000MB  1930MB  primary  ext4
+ 3      2001MB  31,9GB  29,9GB  primary  ext4                 lba
+
+$quit
+
+$sudo mkfs.ext4 /dev/sdb3
+
+\end{verbatim}
+
+Ensuite il faut éditer le fichier `/etc/fstab' sur la carte.
+
+\begin{verbatim}
+proc                           /proc    proc    defaults                  0       0
+/dev/mmcblk0p1  /boot    vfat    defaults                   0       2
+/dev/mmcblk0p2  /             ext4    defaults,noatime 0       1
+/dev/mmcblk0p3  /home ext4    defaults,noatime  0       1
+\end{verbatim}
+
+Enfin il faut copier le contenu du ``home'' de la pi sur la nouvelle partition~:
+
+\begin{verbatim}
+$cd /media/pascal/0aed834e-8c8f-412d-a276-a265dc676112/home/
+$sudo cp -Ra * /media/pascal/f59b2c6c-b34c-45ec-b945-e01823d08bf5/
+\end{verbatim}
+
+\subsection{Préserver la carte SD}
+
+\subsubsection{Mettre la carte SD en lecture seule}
+Certains, pour augmenter la durée de vie de la carte SD, monte la racine sur la clef en lecture seule. Ceci pour éviter les écritures des logs et autres qui sont fréquents et qui ``abiment'' la carte SD. 
+
+Avec la diminution du prix des cartes SD, cela devient moins nécessaire. D'expérience une carte SD utilisée sur un Pi peut tenir plusieurs années. En outre cela a un grave inconvénient si on utilise le Pi comme routeur ou comme serveur c'est qu'on perd les logs qui sont stockés en mémoire vive. Et les logs, c'est plutôt utile\dots
+
+Un moyen de contourner serait d'écrire les logs sur une clef usb mais ça a grosso modo la même durée de vie qu'une carte SD (voire moins). Le mieux est surement de prendre une carte minimum genre 8Go qui n'est pas trop chère.
+
+La manipulation pour passer la carte en lecture seule est décrite ci-dessous. 
+
+Tout d'abord il faut mettre en mémoire vive les fichiers d'ajustement du temps (la Raspberry n'a pas d'horloge interne).
+
+\begin{verbatim}
+$sudo ln -s /var/run/adjtime /etc/adjtime
+$sudo nano +61 /etc/init.d/hwclock.sh
+\end{verbatim}
+
+Dans le fichier qui vient d'ouvrir à la ligne  61, il faut changer le -f (vrai si le fichier existe et est un fichier régulier) en -L (vrai si le fichier existe et est un lien symbolique).
+
+Ce qui donne~:
+\begin{verbatim}
+if [ -w /etc ] && [ ! -L /etc/adjtime ] && [ ! -e /etc/adjtime ]; then
+\end{verbatim}
+
+Puis on crée un fichier cache dans ``/etc/blkid/blkid.tab''. Nous allons le déplacer sur un ramdisk.
+
+\begin{verbatim}
+$sudo nano /etc/environment
+$BLKID_FILE="/var/run/blkid.tab"
+\end{verbatim}
+
+Il faut éditer le fichier ``/etc/fstab''~:
+
+\begin{verbatim}
+proc				/proc	proc    defaults							0	0
+tmpfs			/tmp	tmpfs nodev,nosuid,size=30M,mode=1777		0	0
+tmpfs			/var/log	tmpfs nodev,nosuid,size=30M,mode=1777		0	0
+/dev/mmcblk0p1  	/boot      	vfat    defaults,noatime,ro          				0       2
+/dev/mmcblk0p2  	/               	ext4    defaults,noatime,ro,errors=remout-ro 	0       1
+\end{verbatim}
+
+Puis il faut dans le fichier ``/etc/default/rcS'' changer la valeur de RAMTMP~:
+
+\begin{verbatim}
+$sudo nano /etc/default/rcS
+RAMTMP=yes
+\end{verbatim}
+
+Enfin dans ``/etc/profile''~:
+\begin{verbatim}
+mount | grep ' on / ' | grep '(ro' && echo "Montage en lecture-écriture" && 
+sudo mount -o remount,rw /
+\end{verbatim}
+
+Et on reboote.
+
+\subsubsection{Ajuster les paramètres pour préserver la carte SD}
+
+Pour ménager la chèvre et le chou, on utilise les recommandations faites pour préserver les lecteurs SSD sur les PCs fixes.
+
+Dans le fichier ``/etc/fstab'', on change quelques petites choses~:
+
+\begin{verbatim}
+proc				/proc proc 	defaults						       0  0
+tmpfs			/tmp  tmpfs	nodev,nosuid,size=30M,mode=1777  0  0
+/dev/mmcblk0p1  	/boot vfat    	defaults,noatime          			        0  2
+/dev/mmcblk0p2  	/          ext4    	defaults,noatime,errors=remout-ro    0  1
+\end{verbatim}
+
+L'argument ``noatime'' est un moyen de supprimer l'écriture de la date de la dernière lecture ce qui minimise les écritures sur le disque.
+
+De plus un crée on crée une partition en mémoire pour /var/tmp dans lequel le système écrit beaucoup.
+
+Puis il faut dans le fichier ``/etc/default/rcS'' changer la valeur de RAMTP~:
+
+\begin{verbatim}
+$sudo nano /etc/default/rcS
+RAMTMP=yes
+\end{verbatim}
+
+Pour que les changements prennent effet, redémarrez votre Pi.

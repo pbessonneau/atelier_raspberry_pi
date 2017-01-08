@@ -1,0 +1,59 @@
+#!/bin/sh
+
+IPTABLES=/sbin/iptables
+
+# Creation des tables
+$IPTABLES -N TCP
+$IPTABLES -N UDP
+
+# Politique par défaut
+$IPTABLES -P FORWARD DROP
+$IPTABLES -P OUTPUT ACCEPT
+$IPTABLES -P INPUT DROP
+
+# Laisser passer les connexions existantes ou provenant du loop
+$IPTABLES -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+$IPTABLES -A INPUT -i lo -j ACCEPT
+
+# Bloquer les invalides
+$IPTABLES -A INPUT -m conntrack --ctstate INVALID -j DROP
+
+# Ouvrir le port 22 pour SSH
+$IPTABLES -A TCP -p tcp --dport 22 -j ACCEPT
+
+# Bloquer les adresses les adresses locales réservées
+$IPTABLES -t raw -I PREROUTING -m rpfilter --invert -j DROP
+
+# TCP Scans
+#$IPTABLES -I TCP -p tcp -m recent --update --seconds 60 --name TCP-PORTSCAN -j REJECT --reject-with tcp-reset
+#$IPTABLES -D INPUT -p tcp -j REJECT --reject-with tcp-reset
+#$IPTABLES -A INPUT -p tcp -m recent --set --name TCP-PORTSCAN -j REJECT --reject-with tcp-reset
+
+# UDP Scans
+#$IPTABLES -I UDP -p udp -m recent --update --seconds 60 --name UDP-PORTSCAN -j REJECT --reject-with icmp-port-unreachable
+#$IPTABLES -D INPUT -p udp -j REJECT --reject-with icmp-port-unreachable
+#$IPTABLES -A INPUT -p udp -m recent --set --name UDP-PORTSCAN -j REJECT --reject-with icmp-port-unreachable
+
+# Again brute-force SSH
+#$IPTABLES -N IN_SSH
+#$IPTABLES -A INPUT -p tcp --dport ssh -m conntrack --ctstate NEW -j IN_SSH
+#$IPTABLES -A IN_SSH -m recent --name sshbf --rttl --rcheck --hitcount 3 --seconds 10 -j DROP
+#$IPTABLES -A IN_SSH -m recent --name sshbf --rttl --rcheck --hitcount 4 --seconds 1800 -j DROP 
+#$IPTABLES -A IN_SSH -m recent --name sshbf --set -j ACCEPT
+
+# Si vous voulez faire du forwarding (routeur)
+# $IPTABLES -N fw-interfaces
+# $IPTABLES -N fw-open
+# $IPTABLES -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+# $IPTABLES -A FORWARD -j fw-interfaces 
+# $IPTABLES -A FORWARD -j fw-open 
+# $IPTABLES -A FORWARD -j REJECT --reject-with icmp-host-unreachable
+# $IPTABLES -P FORWARD DROP
+
+# internal:
+INTERNAL=wlan0
+EXTERNAL=eth0
+
+# $IPTABLES -A fw-interfaces -i $INTERNAL -j ACCEPT
+# $IPTABLES -t nat -A POSTROUTING -s 192.168.0.0/24 -o $EXTERNAL -j MASQUERADE
+

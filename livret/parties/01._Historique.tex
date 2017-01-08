@@ -1,0 +1,62 @@
+\section{Petit historique du Raspberry Pi}
+
+Le Raspberry a été conçu car si en 90 les adolescents faisaient leur arme sur des Amiga, Commodore, \dots et passaient souvent des heures à programmer, pour leur homologues des années 2000 se n'était plus le cas. En effet ils étaient formés pour la bureautique et les sites web éventuellement. Avec le PC familial on ne peux plus prendre de ``risque''.
+
+C'est pour contourner ce problème que les concepteurs du Raspberry Pi ont voulu concevoir un ordinateur qui, vu le prix, pourrait être bidouiller à loisir et pouvait servir de support pour la programmation.
+
+De 2006 à 2008, Eben Upton a réalisé plusieurs prototypes de ce qui allait devenir le Raspberry Pi. A partir de 2008 les processeurs boostés par les applications mobiles rendaient possible de faire une carte pour laquelle la programmation et la diffusion de vidéo devenaient possibles pour un prix raisonnable.
+
+Eben Upton, Robert Mullins, Jack Lang et Alan Mycroft en équipe avec Pete Lomas et David Braben ont créé la Fondation Raspberry Pi est l'équivalent d'une association de loi 1901 en France en 2009. 
+
+Il faudra attendre trois ans plus tard pour que la fabrication en série commence.
+
+\begin{description}
+	\item[Février 2012] Disponibilité  du Raspberry Pi A, le premier lot est vendu en quelques minutes
+	\item[Mai 2012] La production atteint son rythme de croisière, le nombre de Pi par personne n'est plus de 1.
+	\item[Septembre 2012] La fondation annonce que le Raspberry Pi sera désormais fabriqué en Angleterre
+	\item[Octobre 2012] Le Raspberry Pi B est livré avec 512Mo
+	\item[Janvier 2013] Un million de Raspberry Pi ont été vendus
+	\item[Novembre 2013] on passe à deux millions
+	\item[Février 2015] Sortie du Rapsberry Pi 2
+	\item[Avril 2015] 5 millions de Raspberry Pi ont été vendus dont 500000 de Raspberry Pi 2
+	\item[Novembre 2015] Le Rapsberry Pi Zéro est en vente. En rupture de stock en moins de 24 heures
+	\item[Janvier 2016] 7 millions de Raspberry Pi vendus
+	\item[Février 2016] Pour le quatrième anniversaire, le Raspberry Pi 3 apparaît
+	\item[Septembre 2016] 10 millions de Raspberry Pi vendus
+\end{description}
+
+La famille des Pis est représentée sur cette image (figure \ref{img_family}) faite par RaspiTV.
+
+\begin{center}
+\begin{figure}
+	\includegraphics{images/pi-family}
+	\caption{Les différents modèles de Pi}
+	\label{img_family}
+\end{figure}
+\end{center}
+
+\section{Les caractéristiques du Pi 3}
+
+Décrire toutes les versions du Pi serait assez long, alors nous n'évoquerons ici que le Raspberry Pi 3.
+
+Broadcomm est censé avoir libéré toutes les spécifications des circuits depuis 2014.
+
+Le CPU est de la famille ARMv8 et est donc un processeur RISC. Vous retrouverez des ARM un peu partout maintenant puisque c'est le processeur le plus fréquent pour les smartphones, tablettes et autres joujous. Celui du Raspberry Pi 3 a quatre coeurs Cortex A53.
+
+Il est 64 bits et compatible 32 bits. Toutefois il est bridé pour l'instant car le support 64 bits n'est apparu que dans une des dernières versions du kernel Linux. Pour l'instant avec la Raspbian, il est encore bridé en 32 bit.
+
+Le GPU est quant à lui un VideoCore IV double coeur. Il est compatible OpenGL et supporte l'accélération matérielle~: certains calculs 2D peuvent être déportés sur le GPU par le CPU.
+
+Il possède un accélération matérielle pour ce qui est codé en H.264. Il supporte aussi le MPEG-2 et le VC-1 mais pour les utiliser il faut acheter une licence. Licence qui est associée au numéro de processeur du Pi.
+
+Un composant spécifique gère à la fois le LAN et l'USB ce qui peut éventuellement générer un engorgement.
+
+Les composant WiFi et Bluetooth sont pratiques mais ils n'ont une portée que d'une dizaine de mètres contrairement aux clefs USB qui ont une portée plus proche des 30m pour le WiFi.
+
+Un détail qui a son importance, le Raspberry Pi n'a pas d'horloge interne. Elle se met à l'heure grâce à un serveur sur Internet. C'est utile de le savoir pour certaines applications.
+
+Pour une somme modique des horloges internes sont disponibles à brancher sur le port GPIO.
+
+
+
+

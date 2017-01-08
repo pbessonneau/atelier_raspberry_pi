@@ -1,0 +1,37 @@
+\documentclass{article}
+% Packages nécessaires
+\include{preambule/packages}
+% Macros commandes
+\include{preambule/macros}
+ % Définition de l'auteur, ...
+\include{preambule/titre}
+% Pieds de page, marges, ...
+\include{preambule/layout}
+\begin{document}
+\maketitle
+\vspace{3cm}
+ \begin{center}
+\begin{tabular}{cc}
+\scalebox{0.2}{\includegraphics{images/Raspberry-Pi-logo}} & \includegraphics{images/sx-nb-color}\\
+\end{tabular}
+
+%\vspace{3cm}
+%\includegraphics{images/88x31}
+
+\end{center}
+\newpage
+%\setcounter{tocdepth}{1}
+\tableofcontents
+\newpage
+\include{parties/01._Historique}
+\include{parties/02._Carte_SD}
+\include{parties/03._Personnalisation}
+\include{parties/04._Demarrage}
+\include{parties/06._Connexion_SSH}
+\include{parties/08._Utilitaires_de_configuration}
+\include{parties/10._Securisation}
+\include{parties/12._Privoxy}
+\include{parties/14._VPN_Server}
+\include{parties/16._Python}
+\include{parties/17._Camera}
+\end{document}

@@ -1,0 +1,19 @@
+\beamer@endinputifotherversion {3.36pt}
+\select@language {french}
+\beamer@sectionintoc {1}{Installer Privoxy}{3}{0}{1}
+\beamer@subsectionintoc {1}{1}{Installation}{4}{0}{1}
+\beamer@subsectionintoc {1}{2}{R\IeC {\'e}glages des filtres}{13}{0}{1}
+\beamer@sectionintoc {2}{Installer un serveur VPN}{16}{0}{2}
+\beamer@subsectionintoc {2}{1}{Installation}{18}{0}{2}
+\beamer@subsectionintoc {2}{2}{Ajouter un nouveau client}{33}{0}{2}
+\beamer@subsectionintoc {2}{3}{C\IeC {\^o}t\IeC {\'e} client}{34}{0}{2}
+\beamer@sectionintoc {3}{Application avec Python sur les ports GPIO}{36}{0}{3}
+\beamer@subsectionintoc {3}{1}{Qu'est ce que le GPIO ?}{36}{0}{3}
+\beamer@subsectionintoc {3}{2}{Eclairer une diode}{40}{0}{3}
+\beamer@subsectionintoc {3}{3}{PiFaceCAD}{45}{0}{3}
+\beamer@subsectionintoc {3}{4}{Sense HAT}{48}{0}{3}
+\beamer@sectionintoc {4}{Application avec la cam\IeC {\'e}ra}{51}{0}{4}
+\beamer@subsectionintoc {4}{1}{Description des cam\IeC {\'e}ras}{51}{0}{4}
+\beamer@subsectionintoc {4}{2}{Capturer des images}{53}{0}{4}
+\beamer@subsectionintoc {4}{3}{Capturer des vid\IeC {\'e}os}{56}{0}{4}
+\beamer@subsectionintoc {4}{4}{Timelapse video}{59}{0}{4}

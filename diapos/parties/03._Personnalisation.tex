@@ -1,0 +1,282 @@
+\section{Personnalisation de la carte}
+
+\subsection{Activer SSH}
+
+\begin{frame}[containsverbatim]
+\frametitle{Activer SSH}
+Maintenant pour des raisons de sécurité, sur Raspbian, SSH est désactivé par défaut. Ceci pour éviter, à cause des gens qui ne modifient pas les mots de passe par défaut, que les Pi ne constituent un réservoir de bots.
+
+\href{http://www.framboise314.fr/une-mise-a-jour-de-securite-pour-raspbian/}{http://www.framboise314.fr/une-mise-a-jour-de-securite-pour-raspbian/}
+
+
+\href{https://www.raspberrypi.org/blog/a-security-update-for-raspbian-pixel/}{https://www.raspberrypi.org/blog/a-security-update-for-raspbian-pixel/}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Activer SSH}
+
+Pour activer le SSH, il faut créer un fichier s'appelant ``ssh'' dans la partition fat32 de démarrage ou bien en utilisant ``raspi-config'' sur un Pi connecté à écran/souris/clavier.
+
+Sous Linux, rien de plus simple, il suffit de faire:
+\begin{verbatim}
+touch /media/pascal/boot/ssh
+\end{verbatim}
+
+\end{frame}
+
+
+\subsection{\'Edition des paramètres réseaux}
+
+\begin{frame}[containsverbatim]
+\frametitle{L'adresse réseau}
+
+Après avoir branché la Pi, elle prend l'adresse réseau assigné par le serveur DHCP du réseau.
+
+Si vous êtes sous Linux, une fois branchée, il faudra trouver le Pi en scannant le réseau à la recherche des ordinateurs avec un serveur SSH accessible~:
+\begin{verbatim}
+nmap -p 22 192.168.0.0/16
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{L'adresse réseau}
+Sinon il vous faudra donc regarder les logs de votre serveur DHCP (généralement votre box internet) pour voir quel IP à été attribué à la Pi pour réussir à vous connecter.
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{L'adresse réseau fixe}
+Pourquoi donner une adresse fixe ? Car on accède pour l'atelier, et plus tard chez vous, au Pi via SSH. Hors il nous faut l'adresse IP de la Pi pour lancer la commande SSH et se connecter à la bonne machine !
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{L'adresse réseau}
+
+Sous Linux, pour pouvoir configurer son Pi avant le démarrage, il suffit de faire~:
+\begin{verbatim}
+cd ~
+mkdir pi
+sudo mount /dev/sdb2 pi
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{L'adresse réseau}
+
+Ensuite il suffit d'éditer le fichier \emph{/home/pascal/pi/etc/network/interfaces} pour le personnaliser et donc donner une adresse fixe au Pi.
+
+Les interfaces réseaux sont~: 
+\begin{itemize}
+	\item eth0 pour le LAN 
+	\item wlan0 pour le wifi 
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+\frametitle{L'adresse réseau}
+
+Dans le fichier ``interfaces'', on remplace la ligne de ``eth0'' par ce contenu~:
+\begin{verbatim}
+allow-hotplug eth0
+iface eth0 inet static
+address 192.168.0.40
+netmask 255.255.255.0
+gateway 192.168.0.1
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{L'adresse réseau}
+
+Idem pour le WiFi avec une modification pour accéder aux identifiants et mots de passe du réseau WiFi auquel on se connecte~:
+\begin{verbatim}
+allow-hotplug wlan0
+iface wlan0 inet static
+address 192.168.0.41
+netmask 255.255.255.0
+gateway 192.168.0.1
+wpa-roam /etc/wpa_supplicant/wpa_supplicant.conf
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{L'adresse réseau}
+
+Attention au cours de ces manipulations, il faut ne pas se tromper entre votre machine (\emph{/etc/network/interfaces}) et le Pi (\emph{/home/pascal/pi/etc/network/interfaces}). Sinon c'est un peu la catastrophe ;)
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{L'adresse réseau}
+
+Et le fichier de configuration ``wpa\_supplicant.conf'' est à modifier pour une connexion sans fil~:
+
+\begin{verbatim}
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+
+network={
+    ssid="freebox_AERFTRE"
+    proto=WPA RSN
+    key_mgmt=WPA-PSK
+    psk="maphrasedepasse"
+}
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{L'adresse réseau}
+
+Par la suite si vous voulez que l'IP ne soit pas fixée par la Pi, vous pourrez le remettre en automatique et fixer un bail DHCP en récupérant l'(es) adresse(s) MAC de la Raspberry Pi.
+
+\begin{verbatim}
+
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{L'adresse réseau}
+
+\begin{verbatim}
+$ifconfig
+eth0      Link encap:Ethernet  HWaddr b8:27:eb:1a:34:64  
+	....
+lo        Link encap:Boucle locale  
+	...
+	
+wlan0     Link encap:Ethernet  HWaddr 74:da:38:1a:b4:b8  
+	...
+\end{verbatim}
+
+\end{frame}
+
+\subsection{Ajout d'un partition /home}
+
+\begin{frame}[containsverbatim]
+\frametitle{Partitionnement}
+
+Le plus simple est d'utiliser gparted ou parted.
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Partitionnement}
+
+Avec parted en ligne de commande, on va agrandir un peu la partition système~:
+\begin{verbatim}
+$parted /dev/sdb
+$print
+\end{verbatim}
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+\frametitle{Partitionnement}
+\begin{verbatim}
+$resizepart 2
+$2000MB
+$print
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Partitionnement}
+
+Pour ajouter la partition ``/home''~:
+
+\begin{verbatim}
+$mkpart
+$primaire
+$ext4
+$2001MB
+$31900MB
+$print
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Formatage}
+
+\begin{verbatim}
+$sudo mkfs.ext4 /dev/sdb3
+
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{le fichier des partitions}
+
+Ensuite il faut éditer le fichier `/etc/fstab' sur la carte.
+
+\begin{verbatim}
+proc            /proc           proc    defaults          0       0
+/dev/mmcblk0p1  /boot           vfat    defaults          0       2
+/dev/mmcblk0p2  /               ext4    defaults,noatime  0       1
+/dev/mmcblk0p3  /home           ext4    defaults,noatime  0       1
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Copie du répertoire /home}
+
+Enfin il faut copier le contenu du ``home'' de la pi sur la nouvelle partition~:
+
+\begin{verbatim}
+$cd /media/pascal/0aed834e-8c8f-412d-a276/home/
+$sudo cp -Ra * /media/pascal/f59b2c6c-b34c/
+\end{verbatim}
+
+\end{frame}
+
+\subsection{Sauvegarde de la carte SD}
+
+\begin{frame}[containsverbatim]
+\frametitle{Sauvegarde de la carte SD}
+
+Vous pouvez sauvegarder la carte SD si vous l'avez personnalisée. Dans ce cas pour faire l'image, vous utilisez la même méthode que pour écrire la carte~:
+\begin{verbatim}
+$sudo dd bs=4M if=/dev/sdb of=~/mon_image_pi.img
+\end{verbatim}
+
+\end{frame}
+
+
+\subsection{Préserver la carte SD}
+
+\begin{frame}
+Pour préserver la carte SD il y a la possibilité de mettre en lecture seule la Pi ce qui n'est pas sans inconvénients.
+
+Pour ménager la chèvre et le chou, on utilise les recommandations faites pour préserver les lecteurs SSD sur les PCs fixes.
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Le fichier des partitions}
+Dans le fichier ``/etc/fstab'', on change quelques petites choses~:
+
+\begin{verbatim}
+proc				/proc	proc 	defaults								0	0
+tmpfs			/tmp	tmpfs	nodev,nosuid,size=30M,mode=1777		0	0
+/dev/mmcblk0p1  	/boot      	vfat    	defaults,noatime          					0       2
+/dev/mmcblk0p2  	/               	ext4    	defaults,noatime,errors=remout-ro 		0       1
+\end{verbatim}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Activer les lecteur virtuel}
+
+\begin{verbatim}
+$sudo nano /etc/default/rcS
+RAMTMP=yes
+\end{verbatim}
+
+et après redémarrer\dots
+
+\end{frame}

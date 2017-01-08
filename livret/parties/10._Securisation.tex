@@ -1,0 +1,179 @@
+\section{Sécurisation de votre Raspberry Pi}
+
+\subsection{Changer le mot de passe}
+
+La première étape est de changer le mot de passe par défaut. Il suffit de se connecter et de faire~:
+\begin{verbatim}
+passwd
+\end{verbatim}
+
+Choisissez un mot de passe le plus sécuritaire possible. 
+
+Vous pouvez aussi créer un utilisateur spécifique. Par exemple pour ajouter un utilisateur \emph{pascal}~:
+\begin{verbatim}
+$sudo adduser pascal
+....
+\end{verbatim}
+
+Il faut veiller si vous bricolez avec votre pi de lui donner les mêmes droits que l'utilisateur pi. Pour cela, il faut éditer le fichier \emph{/etc/groups}.
+
+Ce sont surtout le groupe \emph{sudo}, \emph{SPI} qui sont utiles car ils permettront de lancer des commandes en tant que \emph{root} et d'avoir le contrôle sur les interfaces de la pi.
+
+Avec le nouvel utilisateur ``username'', vous devez écrire la commande suivante pour avoir la même configuration que l'utilisateur ``Pi'' (le tout sur une même ligne)
+
+\begin{verbatim}
+$sudo usermod -a -G adm,dialout,cdrom,sudo,audio,video,
+plugdev,games,users,input,netdev,spi,i2c,gpio  username
+\end{verbatim}
+
+Si vous voulez supprimer le compte pi par sécurité, il suffit de faire~:
+\begin{verbatim}
+$sudo deluser pi
+\end{verbatim}
+
+\subsection{Pare-feu}
+
+Vous devez mettre un pare-feu. Surtout si vous utilisez le Pi comme serveur et donc qui est ``face'' à internet. 
+
+Attention, quelque soit le pare-feu, il faut laisser le port 22 ouvert pour vous connecter avec SSH sinon votre Raspberry Pi deviendra une brique... Il faut ouvrir le port et lancer le pare-feu au cours d'une session SSH et se connecter dans une nouvelle connexion pour vérifier que le port est bien ouvert !
+
+Avant tout il est utile de sauvegarder un pare-feu vide au cas où les choses tournent mal.
+
+\begin{verbatim}
+$sudo iptables-save  ~/iptables.empty
+\end{verbatim}
+
+Vous pouvez faire un pare-feu simple ``à la main'' avec \emph{iptables}~:
+\begin{verbatim}
+#!/bin/sh
+
+IPTABLES=/sbin/iptables
+
+# Creation des tables
+$IPTABLES -N TCP
+$IPTABLES -N UDP
+
+# Politique par défaut
+$IPTABLES -P FORWARD DROP
+$IPTABLES -P OUTPUT ACCEPT
+$IPTABLES -P INPUT DROP
+
+# Laisser passer les connexions existantes ou provenant du loop
+$IPTABLES -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+$IPTABLES -A INPUT -i lo -j ACCEPT
+
+# Bloquer les invalides
+$IPTABLES -A INPUT -m conntrack --ctstate INVALID -j DROP
+
+# Misc
+$IPTABLES -A INPUT -p icmp --icmp-type 8 -m conntrack --ctstate NEW -j ACCEPT
+$IPTABLES -A INPUT -p udp -m conntrack --ctstate NEW -j UDP
+$IPTABLES -A INPUT -p tcp --syn -m conntrack --ctstate NEW -j TCP
+$IPTABLES -A INPUT -p udp -j REJECT --reject-with icmp-port-unreachable
+$IPTABLES -A INPUT -p tcp -j REJECT --reject-with tcp-reset
+$IPTABLES -A INPUT -j REJECT --reject-with icmp-proto-unreachable
+
+# Ouvrir le port 22 pour SSH
+$IPTABLES -A TCP -p tcp --dport 22 -j ACCEPT
+
+...
+\end{verbatim}
+
+En cas de problème, utiliser le fichier qui permet de restaurer un pare-feu vide~:
+
+\begin{verbatim}
+sudo iptables-restore ~/iptables.empty
+\end{verbatim}
+
+Attention tous les fichiers du firewall doivent être accessibles seulement par le root.
+
+\begin{verbatim}
+$sudo chmod 700 02-firewall
+$sudo chown root:root 02-firewall
+\end{verbatim}
+
+Le fichier du firewall est à mettre dans le répertoire ``/etc/network/if-pre-up.d''. Il sera exécuter dès que le réseau va devenir accessible. Vous pouvez aussi le placer en fin de lancement de Linux~: dans le fichier ``/etc/rc.local''.
+
+Sinon il y a un paquet très efficace et pratique~: \emph{arno-iptables-firewall}. C'est un script BASH qui fait un pare-feu de bonne facture. Il faut indiquer les ports à laisser ouvert lors de l'installation. Il gère aussi des règles plus complexes~: NAT, DMZ, ports ouverts sur le LAN et pas sur internet, ... Le fichier de configuration est assez simple et assez didactique.
+
+Pour l'installer, c'est comme pour n'importe quel paquet Debian~:
+\begin{verbatim}
+$sudo apt-get install arno-iptables-firewall
+\end{verbatim}
+
+Lors de l'installation, il vous pose les questions suivantes~:
+\begin{enumerate}
+	\item Faut-il gérer automatiquement le pare-feu. La réponse est oui.
+	\item Les interfaces réseaux externes sont les interfaces réseaux qui seront filtrées par le pare-feu. Pour être le plus sécuritaire il vaut mieux toutes les ajouter en mettant~: eth+ wlan+
+	\item Il demande si le DHCP est autorisé sur les réseaux externes. Si vous avez ajouter toutes les interfaces répondez oui. Si vous n'avez pas mis votre réseau local en interface externe vous pouvez répondre non.
+	\item Ports TCP ouverts. Il y en a un à rajouter absolument c'est le port 22 (du SSH) pour se connecter au Pi. Après vous pourrez en rajouter à loisir au fil de votre configuration.
+	\item Ports UDP ouverts. normalement il y en a pas sauf si vous installez un serveur OpenVPN par exemple.
+	\item Faut-il autoriser les ping\dots Si vous n'installez pas OpenVPN il vaut mieux répondre non. 
+	\item Interfaces réseaux ethernes. CE sont les interfaces réseaux qui ne seront pas protégées. Par défaut c'est vide (cf 2.).
+	\item Faut-il redémarrer le pare-feu. Oui
+\end{enumerate}
+
+Pour stopper le pare-feu, relancer et lancer le pare-feu les commandes sont respectivement~:
+\begin{verbatim}
+$sudo service arno-iptables-firewall stop
+$sudo service arno-iptables-firewall restart
+$sudo service arno-iptables-firewall start
+\end{verbatim}
+
+Pour le reconfigurer vous avez deux possibilités. Soit utiliser l'interface NCURSES en mode console en faisant~:
+\begin{verbatim}
+$sudo dpkg-reconfigure arno-iptables-firewall
+\end{verbatim}
+
+Soit en éditant le fichier ``/etc/arno-iptables-firewall/conf.d/00debconf.conf'' directement.
+
+Il y a des réglages beaucoup plus avancés disponibles dans le fichier firewall.conf du répertoire ``/etc/arno-iptables-firewall''.
+
+\subsection{Mise à jour}
+
+Il faut maintenir votre Raspberry Pi à jour... Pour tout ce qui est fourni par les paquets Debian, il suffit de faire de temps en temps un petit~:
+\begin{verbatim}
+$sudo apt-get update
+$sudo apt-get upgrade -y
+$sudo apt-get dist-upgrade -y
+\end{verbatim}
+
+Si la mise à jour contient une mise à jour du noyau, il faudra redémarrer le Pi.
+
+Comme vu précédemment il y a aussi le firmware à mettre à jour avec la commande spéciale~:
+\begin{verbatim}
+$sudo rpi-update
+\end{verbatim}
+
+Le mieux est de créer un alias dans le fichier \emph{.bashrc}~:
+\begin{verbatim}
+alias update=sudo rpi-update && sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get dist-upgrade -y 
+\end{verbatim}
+
+Si vous avez installer un serveur web avec WordPress ou Yunohost il vous faudra aussi mettre à jour les composants en plus.
+
+De temps en temps, des paquets ne sont plus nécessaires, dans ce cas il vous le signale quand vous faites des mises à jour. Il faut alors taper~:
+\begin{verbatim}
+$sudo apt-get autoremove
+\end{verbatim}
+
+\subsection{Bloquer les connexions SSH non basées sur les clefs}
+
+Pour éviter les connexions qui utilisent un mot de passe au lieu de la clef privé/clef publique, il faut changer cette ligne (c'est la dernière ligne) dans ``/etc/ssh/sshd\_config''~:
+
+\begin{verbatim}
+UsePAM no
+\end{verbatim}
+
+Il faut aussi empêcher les connexions en tant que root (c'est la ligne 28)~:
+\begin{verbatim}
+PermitRootLogin no
+\end{verbatim}
+
+Puis il faut redémarrer le serveur~:
+
+\begin{verbatim}
+$sudo service ssh restart
+\end{verbatim}
+
+
